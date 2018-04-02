@@ -16,6 +16,12 @@ public class FlightIcon extends JComponent {
 		color = colorIn;
 		shape = "circle";
 	}
+	
+	public FlightIcon(Color colorIn, String shapeIn) {
+		setPreferredSize(new Dimension(75, 75));
+		color = colorIn;
+		shape = shapeIn;
+	}
 
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);

@@ -16,12 +16,12 @@ public class main {
 
     public static void main(String[] args) {
         
-    	 Flight v = new Flight();
+    	 FlightFilter v = new FlightFilter();
         main main = new main();
         
         JFrame abc = new JFrame();
         JPanel ab = new JPanel();
-        ArrayList<Flight> flights = new ArrayList<>();
+        ArrayList<FlightFilter> flights = new ArrayList<>();
         abc.add(ab);
         
         JButton open = new JButton("selectFlightMenu");
@@ -40,7 +40,7 @@ public class main {
         
         open.addActionListener(new ActionListener() {
 		    public void actionPerformed(ActionEvent e) {
-		    	new SelectFlightsMenu(abc);
+		    	new SelectFlightsMenu(abc, flights);
 			    }
         });
         

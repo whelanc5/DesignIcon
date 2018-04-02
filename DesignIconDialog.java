@@ -24,12 +24,15 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 
 public class DesignIconDialog extends JDialog implements ActionListener {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private HashMap<String, Color> colorsList = new HashMap<>();
-	private Flight vehicle;
+	private FlightFilter filter;
 	private FlightIcon icon;
 	private ButtonGroup colorBoxes = new ButtonGroup();
 
@@ -41,13 +44,13 @@ public class DesignIconDialog extends JDialog implements ActionListener {
 	 * @param vehicle
 	 *            - vehicle object that's icon is being designed
 	 */
-	public DesignIconDialog(JFrame parent, Flight v) {
+	public DesignIconDialog(JFrame parent, FlightFilter v) {
 		super(parent, "Design Icon");
-		this.vehicle = v;
+		this.filter = v;
+		this.setModal(true);
 		icon = new FlightIcon(Color.red);
 		icon.changeColor(v.getIcon().getColor());
 		icon.setShape(v.getIcon().getShape());
-		//this.setPreferredSize(new Dimension(500, 500));
 		this.getContentPane().add(getPanel());
 		pack();
 		setVisible(true);
@@ -64,7 +67,7 @@ public class DesignIconDialog extends JDialog implements ActionListener {
 		JPanel designPanel = new JPanel(new BorderLayout());
 		JLabel designLabel = new JLabel("Design Icon");
 		Font font = designLabel.getFont();
-		Map attributes = font.getAttributes();
+		Map<TextAttribute, Integer> attributes = (Map<TextAttribute, Integer>) font.getAttributes();
 		attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
 		designLabel.setFont(font.deriveFont(attributes));
 		designPanel.add(designLabel, BorderLayout.NORTH);
@@ -78,7 +81,9 @@ public class DesignIconDialog extends JDialog implements ActionListener {
 
 		rightSidePanel.add(this.getColorPanel(), BorderLayout.NORTH);
 
-		designPanel.add(rightSidePanel);
+		designPanel.add(rightSidePanel, BorderLayout.EAST);
+
+		designPanel.add(new JPanel());
 
 		// pane for the left side of the layout
 		JPanel leftSidePanel = new JPanel(new BorderLayout());
@@ -94,30 +99,18 @@ public class DesignIconDialog extends JDialog implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 
-		/*
-		 * if (e.getSource() instanceof JCheckBox) {
-		 * 
-		 * colorBoxes.clearSelection();
-		 * 
-		 * 
-		 * ColorIcon cIcon = (ColorIcon) cb.getIcon();
-		 * icon.changeColor(cIcon.getColor()); icon.repaint();
-		 * 
-		 * cb.repaint();
-		 * 
-		 * }
-		 */
 		if (e.getActionCommand().equals("Apply")) {
-			vehicle.getIcon().changeColor(icon.getColor());
-			vehicle.getIcon().setShape(icon.getShape());
+			filter.getIcon().changeColor(icon.getColor());
+			filter.getIcon().setShape(icon.getShape());
 		} else if (e.getActionCommand().equals("OK")) {
-			vehicle.getIcon().changeColor(icon.getColor());
-			vehicle.getIcon().setShape(icon.getShape());
+			filter.getIcon().changeColor(icon.getColor());
+			filter.getIcon().setShape(icon.getShape());
 			dispose();
 		} else if (e.getActionCommand().equals("Cancel")) {
 			dispose();
 		} else if (e.getActionCommand().equals("Help")) {
 			getHelpPanel();
+			// action command to set color
 		} else if (colorsList.get(e.getActionCommand()) != null) {
 			colorBoxes.clearSelection();
 			icon.changeColor(colorsList.get(e.getActionCommand()));
@@ -166,7 +159,7 @@ public class DesignIconDialog extends JDialog implements ActionListener {
 	private JPanel getPreviewPanel() {
 
 		JPanel previewPanel = new JPanel(new BorderLayout());
-		//previewPanel.setLayout(new BoxLayout(previewPanel, ));
+		// previewPanel.setLayout(new BoxLayout(previewPanel, ));
 
 		JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		previewPanel.add(labelPanel);
@@ -176,7 +169,7 @@ public class DesignIconDialog extends JDialog implements ActionListener {
 
 		labelPanel.add(previewLabel);
 		previewPanel.add(labelPanel);
-		
+
 		JPanel iconPanel = new JPanel(new BorderLayout());
 		JPanel previewIconPanel = new JPanel();
 		previewIconPanel.setSize(new Dimension(50, 50));
@@ -186,7 +179,7 @@ public class DesignIconDialog extends JDialog implements ActionListener {
 
 		String[] shapes = { "rectangle", "circle" };
 		JComboBox<String> shapeComboBox = new JComboBox<String>(shapes);
-		shapeComboBox.setSelectedItem(vehicle.getIcon().getShape());
+		shapeComboBox.setSelectedItem(filter.getIcon().getShape());
 		shapeComboBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				icon.setShape(shapeComboBox.getSelectedItem().toString());
@@ -196,7 +189,7 @@ public class DesignIconDialog extends JDialog implements ActionListener {
 				// useful)
 			}
 		});
-		
+
 		previewPanel.add(iconPanel, BorderLayout.SOUTH);
 		iconPanel.add(previewIconPanel, BorderLayout.NORTH);
 		iconPanel.add(shapeComboBox, BorderLayout.SOUTH);
@@ -221,31 +214,25 @@ public class DesignIconDialog extends JDialog implements ActionListener {
 
 		colorWrapper.add(labelPanel, BorderLayout.NORTH);
 		JPanel colorPanel = new JPanel(new GridLayout(6, 6));
-		//colorPanel.setPreferredSize(new Dimension(400, 400));
+		// colorPanel.setPreferredSize(new Dimension(400, 400));
 
 		ArrayList<Color> colors = ColorList.getColors();
-	
-		
 
-		
-		
 		for (Color c : colors) {
 
 			ColorIcon cIcon = new ColorIcon(c, 30, 30);
 
 			JCheckBox cb = new JCheckBox(cIcon);
 			cb.setSelectedIcon(cIcon.getRolloverIcon());
-			// cb.setPressedIcon(cIcon.getPressedIcon(Color.BLACK));
 			cb.setActionCommand(cIcon.getColor().toString());
-			// System.out.println(cIcon.getColor().toString());
 			colorsList.put(cIcon.getColor().toString(), cIcon.getColor());
 			cb.addActionListener(this);
 			colorBoxes.add(cb);
 			colorPanel.add(cb);
-
-			if (c.equals(cIcon.getColor())) {
+			//to check starting color
+			if (c.equals(filter.getIcon().getColor())) {
 				cb.setSelected(true);
-
+				System.out.println(c);
 			}
 
 		}
@@ -268,19 +255,19 @@ public class DesignIconDialog extends JDialog implements ActionListener {
 		applyButton.setActionCommand(applyButton.getText());
 		applyButton.addActionListener(this);
 		applyWrapper.add(applyButton);
-		
+
 		JPanel okWrapper = new JPanel();
 		JButton okButton = new JButton("OK");
 		okButton.setActionCommand(okButton.getText());
 		okButton.addActionListener(this);
 		okWrapper.add(okButton);
-		
+
 		JPanel cancelWrapper = new JPanel();
 		JButton cancelButton = new JButton("Cancel");
 		cancelButton.setActionCommand(cancelButton.getText());
 		cancelButton.addActionListener(this);
 		cancelWrapper.add(cancelButton);
-		
+
 		JPanel helpWrapper = new JPanel();
 		JButton helpButton = new JButton("Help");
 		helpButton.setActionCommand(helpButton.getText());
@@ -297,39 +284,39 @@ public class DesignIconDialog extends JDialog implements ActionListener {
 
 	private JPanel getMarkingPanel() {
 		JPanel markingWrapper = new JPanel(new BorderLayout());
-		//label panel set up
+		// label panel set up
 		JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		labelPanel.setOpaque(true);
 		labelPanel.setBackground(Color.lightGray);
 		JLabel markingLabel = new JLabel("Marking");
 		labelPanel.add(markingLabel);
 		markingWrapper.add(labelPanel, BorderLayout.NORTH);
-		
-		//marking panel 
+
+		// marking panel
 		JPanel markingPanel = new JPanel();
 		markingPanel.setLayout(new BoxLayout(markingPanel, BoxLayout.Y_AXIS));
-		
-		//marking label and combobox set up
+
+		// marking label and combobox set up
 		JPanel markingBoxPanel = new JPanel(new GridBagLayout());
 		String[] markingList = { "<NONE>", "1" };
 		JComboBox<String> markingBox = new JComboBox<String>(markingList);
 		JLabel markingBoxLabel = new JLabel("Marking");
-		
+
 		markingBoxPanel.add(markingBoxLabel);
-		markingBoxPanel.add(markingBox);	
-	
+		markingBoxPanel.add(markingBox);
+
 		markingPanel.add(markingBoxPanel);
-		
-		//border label and combo box set up
+
+		// border label and combo box set up
 		JPanel borderBoxPanel = new JPanel(new GridBagLayout());
-		String[] borderList = { "<NONE>", "Red", "Blue" };		
+		String[] borderList = { "<NONE>", "Red", "Blue" };
 		JComboBox<String> borderBox = new JComboBox<String>(borderList);
 		JLabel borderBoxLabel = new JLabel("Border   ");
 		borderBoxPanel.add(borderBoxLabel);
 		borderBoxPanel.add(borderBox);
-		
-		markingPanel.add(borderBoxPanel);		
-		
+
+		markingPanel.add(borderBoxPanel);
+
 		markingWrapper.add(markingPanel);
 
 		return markingWrapper;
